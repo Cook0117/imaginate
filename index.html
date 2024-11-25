@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Imaginate</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Header with logo and navigation tabs -->
+    <header>
+        <h1 onclick="location.reload()">Imaginate</h1>
+        <nav class="top-nav">
+            <button id="showImagesButton" class="nav-tab">Images</button>
+            <button id="showVideosButton" class="nav-tab">Videos</button>
+            <button id="showAnimationButton" class="nav-tab">Animation</button>
+            <button id="showVrButton" class="nav-tab">VR/AR</button>
+            <div class="search-bar">
+                <input type="text" placeholder="Search for specific art...">
+            </div>
+        </nav>
+    </header>
+
+    <!-- Sidebar with navigation options -->
+    <aside class="sidebar">
+        <div class="sidebar-item" id="loggedInUser">👤 Not Logged In</div>
+        <div class="sidebar-item" id="loginButton">🔐 Login</div>
+        <div class="sidebar-item" id="registerButton">👤 Register</div>
+        <div class="sidebar-item" id="logoutButton" style="display: none;">🔓 Logout</div>
+        <div class="sidebar-item"><span class="icon">🔍</span> Search</div>
+        <div class="sidebar-item"><span class="icon">🔔</span> Notifications</div>
+        <div class="sidebar-item"><span class="icon">💬</span> Messages</div>
+        <div class="sidebar-item"><span class="icon">🔖</span> Saved</div>
+        <div class="sidebar-item"><span class="icon">⚙️</span> Settings</div>
+    </aside>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Random Content Section -->
+        <div id="randomContentSection" class="content-section">
+            <h2>Explore</h2>
+            <div id="randomContentFeed" class="content-feed">
+                <!-- Random content from each section will be dynamically added here -->
+            </div>
+        </div>
+
+        <!-- Existing sections for specific content types -->
+        <div id="imagesSection" class="content-section" style="display: none;">
+            <h2>Images</h2>
+            <div id="contentFeedImages" class="content-feed"></div>
+        </div>
+        <div id="videosSection" class="content-section" style="display: none;">
+            <h2>Videos</h2>
+            <div id="contentFeedVideos" class="content-feed"></div>
+        </div>
+        <div id="animationSection" class="content-section" style="display: none;">
+            <h2>Animation</h2>
+            <div id="contentFeedAnimation" class="content-feed"></div>
+        </div>
+        <div id="vrSection" class="content-section" style="display: none;">
+            <h2>VR/AR</h2>
+            <div id="contentFeedVr" class="content-feed"></div>
+        </div>
+    </main>
+
+    <!-- Upload Modal -->
+    <div id="uploadModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h2>Create a Post:</h2>
+            <form id="uploadForm" enctype="multipart/form-data">
+                <input type="file" id="file" name="file" accept="image/*,video/*" required>
+                <input type="text" id="caption" name="caption" placeholder="Caption" required>
+                <select id="category" name="category" required>
+                    <option value="Images">Images</option>
+                    <option value="Videos">Videos</option>
+                    <option value="Animation">Animation</option>
+                    <option value="VR/AR">VR/AR</option>
+                </select>
+                <button type="submit" class="post-btn">Post</button>
+            </form>
+            <button id="closeUploadModal">Close</button>
+        </div>
+    </div>
+
+<!-- Modal for Viewing Content in Larger Format -->
+<div id="contentModal">
+    <div class="modal-content">
+        <button class="close-button" onclick="closeContentModal()">×</button>
+        <div id="modalContentArea">
+            <!-- Dynamic content (image or video) will appear here -->
+        </div>
+    </div>
+</div>
+
+    <!-- Register Modal -->
+    <div id="registerModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h2>Register</h2>
+            <form id="registerForm">
+                <label for="registerUsername">Username:</label>
+                <input type="text" id="registerUsername" name="username" required>
+                <label for="registerPassword">Password:</label>
+                <input type="password" id="registerPassword" name="password" required>
+                <button type="submit">Register</button>
+            </form>
+            <button id="closeRegisterModal">Close</button>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h2>Login</h2>
+            <form id="loginForm">
+                <input type="text" id="loginUsername" placeholder="Username" required />
+                <input type="password" id="loginPassword" placeholder="Password" required />
+                <button type="submit">Login</button>
+            </form>
+            <button id="closeLoginModal">Close</button>
+        </div>
+    </div>
+
+    <!-- Button to open the upload modal -->
+    <button id="openUploadButton" class="open-upload-btn">Upload</button>
+    
+    <div id="recommendations" class="content-feed">
+        <!-- AI-powered recommendations will appear here -->
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
