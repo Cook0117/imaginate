@@ -5,6 +5,13 @@
     box-sizing: border-box;
 }
 
+#logo {
+    max-width: 150px; /* Set a max width for the image */
+    height: auto;     /* Maintain aspect ratio */
+    display: block;   /* Ensure proper alignment */
+    margin: 0 auto;   /* Center the image */
+  }
+
 body {
     font-family: Arial, sans-serif;
     display: flex;
@@ -173,32 +180,29 @@ main {
     background-color: white;
     padding: 20px;
     border-radius: 10px;
-    width: 500px;        /* Adjust to control modal width */
-    max-width: 90%;
+    width: 700px;        /* Adjust to control modal width */
+    height: 700px;
+    max-width: 100%;
     position: relative;
     text-align: center;
 }
 
 #contentModal .modal-content video {
     max-width: 100%;      /* Ensures the video fills the modal content area */
-    max-height: 400px;    /* Control max height in the modal */
+    max-height: 700px;    /* Control max height in the modal */
     border-radius: 8px;
 }
 
 #contentModal .close-button {
     position: absolute;
-    top: 10px;
+    top: 5px;
     right: 10px;
-    font-size: 20px;
-    color: white;
+    font-size: 30px;
+    color: black;
     cursor: pointer;
     background-color: transparent;
     border: none;
     outline: none;
-}
-
-#contentModal .close-button:hover {
-    color: lightblue;
 }
 
 
@@ -242,7 +246,8 @@ main {
     border: 1px solid #ddd;
     border-radius: 10px;
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-    max-width: 400px;
+    max-width: 900px;
+    max-height: 900px;
     width: 100%;
     padding: 20px;
     text-align: center;
@@ -251,13 +256,13 @@ main {
 /* Image styling inside each post */
 .post img {
     width: 100%;
-    max-width: 350px;
+    max-width: 880px;
     border-radius: 10px;
 }
 /* Consistent size for video within posts */
 .post video {
     max-width: 100%;       /* Ensures the video fits within the container */
-    max-height: 300px;     /* Controls height for consistent size */
+    max-height: 880px;     /* Controls height for consistent size */
     border-radius: 8px;
 }
 /* Caption styling */
@@ -321,4 +326,103 @@ main {
 
 .comments-section li {
     margin-bottom: 5px;
+}
+
+.save-button.saved {
+    color: black;
+}
+
+.like-button {
+    background-color: #ff4d4d;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 5px 10px;
+    display: inline-block;
+    position: absolute;
+}
+
+.like-button:hover {
+    background-color: #ff1a1a;
+}
+
+.like-button span {
+    margin-left: 5px;
+    font-weight: bold;
+}
+
+/* Chatbot container styles */
+#chatbot-container {
+    position: fixed; /* Fixed position */
+    bottom: 70px; /* 20px from the bottom */
+    left: 50%; /* Center horizontally */
+    transform: translateX(-50%); /* Center alignment */
+    width: 300px; /* Chatbot width */
+    background-color: #f9f9f9; /* Light gray background */
+    border: 1px solid #ccc; /* Border for the chatbot */
+    border-radius: 10px; /* Rounded corners */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Shadow effect */
+    padding: 10px; /* Inner padding */
+    z-index: 1000; /* Keep above other elements */
+}
+
+/* Chat input styles */
+#chat-input {
+    width: calc(100% - 20px); /* Full width minus padding */
+    padding: 8px;
+    margin-top: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px; /* Rounded input corners */
+    resize: none; /* Prevent resizing */
+    box-sizing: border-box; /* Include padding in width/height */
+}
+
+/* Send button styles */
+#send-button {
+    width: 100%; /* Full width of the container */
+    margin-top: 10px;
+    padding: 8px;
+    background-color: #007bff; /* Primary blue color */
+    color: white; /* White text */
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#send-button:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+}
+
+/* Chat response area styles */
+#chat-response-area {
+    max-height: 150px; /* Limit height for scrolling */
+    overflow-y: auto; /* Add vertical scroll if content overflows */
+    background-color: #e9ecef; /* Light gray for responses */
+    padding: 8px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+/* Toggle button styles */
+#toggle-chatbot {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #73b7ff;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    z-index: 1001;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Optional: Add shadow for a modern look */
+}
+
+#toggle-chatbot:hover {
+    background-color: #0056b3;
 }
