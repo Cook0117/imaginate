@@ -10,7 +10,7 @@
 
     <!-- Header with logo and navigation tabs -->
     <header>
-        <h1 onclick="location.reload()">Imaginate</h1>
+        <h1 onclick="window.location.href='/'" style="cursor: pointer;">imaginate</h1>
         <nav class="top-nav">
             <button id="showImagesButton" class="nav-tab">Images</button>
             <button id="showVideosButton" class="nav-tab">Videos</button>
@@ -24,7 +24,6 @@
 
     <!-- Sidebar with navigation options -->
     <aside class="sidebar">
-        <div class="sidebar-item" id="loggedInUser">👤 Not Logged In</div>
         <div class="sidebar-item" id="loginButton">🔐 Login</div>
         <div class="sidebar-item" id="registerButton">👤 Register</div>
         <div class="sidebar-item" id="logoutButton" style="display: none;">🔓 Logout</div>
@@ -35,16 +34,10 @@
         <div class="sidebar-item"><span class="icon">⚙️</span> Settings</div>
     </aside>
 
-    <!-- Main Content -->
     <main>
-        <!-- Random Content Section -->
-        <div id="randomContentSection" class="content-section">
-            <h2>Explore</h2>
-            <div id="randomContentFeed" class="content-feed">
-                <!-- Random content from each section will be dynamically added here -->
-            </div>
+        <div id="contentFeed" class="content-feed">
+            <!-- Dynamically generated posts will appear here -->
         </div>
-
         <!-- Existing sections for specific content types -->
         <div id="imagesSection" class="content-section" style="display: none;">
             <h2>Images</h2>
@@ -63,6 +56,10 @@
             <div id="contentFeedVr" class="content-feed"></div>
         </div>
     </main>
+
+    <div class="post-header">
+        <a href="#" onclick="viewUserProfile('${post.username}')">${post.username}</a>
+    </div>
 
     <!-- Upload Modal -->
     <div id="uploadModal" class="modal" style="display: none;">
@@ -123,10 +120,34 @@
 
     <!-- Button to open the upload modal -->
     <button id="openUploadButton" class="open-upload-btn">Upload</button>
-    
-    <div id="recommendations" class="content-feed">
-        <!-- AI-powered recommendations will appear here -->
+
+
+
+    <div class="post-actions">
+        <button class="like-button" onclick="likePost('POST_ID')">
+            ❤️ <span id="like-count-POST_ID">0</span>
+        </button>
     </div>
+
+    
+    <div id="recommendationsSection">
+        <h2>Recommended for You</h2>
+        <div id="recommendationsContainer" class="content-grid">
+            <!-- Recommended posts will be dynamically added here -->
+        </div>
+    </div>
+
+<!-- Chatbot toggle button -->
+<button id="toggle-chatbot">💬 Chat</button>
+
+<!-- Single chatbot container -->
+<div id="chatbot-container" style="display: none;">
+    <div id="chat-response-area">
+        <div id="chat-response"></div>
+    </div>
+    <textarea id="chat-input" placeholder="Type your message here..."></textarea>
+    <button id="send-button">Send</button>
+</div>
 
     <script src="script.js"></script>
 </body>
