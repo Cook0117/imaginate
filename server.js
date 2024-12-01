@@ -1,4 +1,4 @@
-require('dotenv').config();
+require("dotenv").config();
 const express = require("express");
 const multer = require("multer");
 const path = require("path");
@@ -8,12 +8,26 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { v4: uuidv4 } = require("uuid");
 const rateLimit = require("express-rate-limit");
-const { Configuration, OpenAIApi } = require("openai"); // Move OpenAI imports here
+const { Configuration, OpenAIApi } = require("openai"); // OpenAI imports
+const configuration = new Configuration({
+    apiKey: process.env.OPENAI_API_KEY, // Ensure your .env file contains the API key
+});
 
-const app = express(); // Declare `app` only once
-const PORT = 3000;
-const JWT_SECRET = "your_secret_key";
+const openai = new OpenAIApi(configuration);
 
+// Declare `app` only once
+const app = express();
+
+// Constants
+const PORT = process.env.PORT || 3000; // Default to 3000 if PORT is not set
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const JWT_SECRET = process.env.JWT_SECRET;
+
+console.log("Loaded OpenAI API Key:", OPENAI_API_KEY);
+console.log("JWT Secret:", JWT_SECRET);
+console.log("App Port:", PORT);
+
+// Data
 let users = []; // Array to store user accounts
 let contentData = []; // Array to store uploaded content data
 let refreshTokens = []; // Array to store valid refresh tokens
@@ -21,12 +35,81 @@ let refreshTokens = []; // Array to store valid refresh tokens
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use("/uploads", express.static("uploads"));
+app.use(express.static(path.join(__dirname, "public")));
 
-// Multer configuration for file storage
+// Function to get AI response
+async function getAIResponse(question) {
+    try {
+        console.log("Fetching AI response...");
+        const response = await openai.createChatCompletion({
+            model: "gpt-3.5-turbo",
+            messages: [{ role: "user", content: question }],
+            max_tokens: 100,
+        });
+
+        console.log("AI response received:", response.data);
+        return response.data.choices[0].message.content.trim();
+    } catch (error) {
+        console.error("Error fetching AI response:", error.response?.data || error.message);
+        throw new Error("Failed to fetch AI response");
+    }
+}
+
+app.post('/chat', async (req, res) => {
+    try {
+        const { question } = req.body;
+
+        if (!question) {
+            console.error("Error: No question provided.");
+            return res.status(400).json({ error: "Question is required." });
+        }
+
+        console.log("Received question:", question);
+
+        // Send the question to OpenAI
+        const response = await openai.createChatCompletion({
+            model: "gpt-3.5-turbo", // Replace with your desired model
+            messages: [{ role: "user", content: question }], // Chat-style input
+            max_tokens: 150,
+        });
+        const aiReply = response.data.choices[0].message.content.trim();
+        console.log("AI Reply:", aiReply);
+
+        res.json({ reply: aiReply });
+    } catch (error) {
+        console.error("Error in /chat endpoint:", error.message); // Log the error message
+        console.error(error.response?.data || error); // Log detailed error information
+
+        // Respond with an appropriate error message
+        res.status(500).json({
+            error: "Failed to process your request.",
+            details: error.response?.data || error.message,
+        });
+    }
+});
+
+
+(async () => {
+    try {
+        const response = await openai.listModels();
+        console.log("Available models:", response.data);
+    } catch (error) {
+        console.error("Error listing models:", error.message);
+    }
+})();
+
+// Default route for the homepage
+app.get("/", (req, res) => {res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
+// Multer configuration
 const storage = multer.diskStorage({
     destination: "uploads/",
     filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname)),
 });
+
 const upload = multer({
     storage,
     limits: { fileSize: 10 * 1024 * 1024 }, // Limit file size to 10MB
@@ -42,20 +125,91 @@ const upload = multer({
     },
 });
 
-app.use("/uploads", express.static("uploads")); // Serve uploaded files
+// Route to fetch images
+app.get("/content/images", (req, res) => {
+    // Filter contentData to return only images
+    const images = contentData.filter(item => item.type === "Images");
+
+    // If no images are found, return an empty array
+    if (images.length === 0) {
+        return res.status(200).json({ data: [] });
+    }
+
+    // Return the filtered images
+    res.status(200).json({ data: images });
+});
+
+// Route to fetch videos
+app.get("/content/videos", (req, res) => {
+    // Filter contentData to return only videos
+    const videos = contentData.filter(item => item.type === "Videos");
+
+    // If no videos are found, return an empty array
+    if (videos.length === 0) {
+        return res.status(200).json({ data: [] });
+    }
+
+    // Return the filtered videos
+    res.status(200).json({ data: videos });
+});
 
 // Middleware for token validation
 function authenticateToken(req, res, next) {
     const authHeader = req.headers.authorization;
     const token = authHeader && authHeader.split(" ")[1];
-    if (!token) return res.status(401).json({ message: "Authorization token required." });
+
+    console.log("Authorization header:", authHeader); // Debug the header
+    console.log("Extracted Token:", token); // Debug the token
+
+    if (!token) {
+        console.error("Token missing in request.");
+        return res.status(401).json({ message: "Authorization token required." });
+    }
 
     jwt.verify(token, JWT_SECRET, (err, user) => {
-        if (err) return res.status(403).json({ message: "Invalid token." });
-        req.user = user; // Attach user info to request
+        if (err) {
+            console.error("Invalid token:", err.message); // Debug invalid token
+            return res.status(403).json({ message: "Invalid token." });
+        }
+
+        console.log("Authenticated user from token:", user); // Log authenticated user
+        req.user = user;
         next();
     });
 }
+
+app.post("/upload", authenticateToken, upload.single("file"), (req, res) => {
+    console.log("Upload endpoint hit"); // Debug log
+    if (!req.file) {
+        return res.status(400).json({ error: "No file uploaded." });
+    }
+
+    try {
+        const { caption, category } = req.body;
+        if (!caption || !category) {
+            return res.status(400).json({ message: "Caption and category are required." });
+        }
+
+        const filePath = `/uploads/${req.file.filename}`;
+        const newPost = {
+            id: uuidv4(),
+            url: filePath,
+            caption,
+            type: category, // E.g., "Images" or "Videos"
+            userId: req.user.id, // The logged-in user's ID
+            username: req.user.username, // The logged-in user's username
+            likes: 0,
+            comments: [],
+        };
+
+        console.log("New Post Created:", newPost); // Debug log
+        contentData.push(newPost);
+
+        res.status(200).json({ message: "Content uploaded successfully!", post: newPost });
+    } catch (error) {
+        res.status(500).json({ message: "Error uploading content.", error });
+    }
+});
 
 // Register Endpoint
 app.post("/register", async (req, res) => {
@@ -69,14 +223,18 @@ app.post("/register", async (req, res) => {
         return res.status(400).json({ message: "Password must be at least 8 characters long." });
     }
 
-    const existingUser = users.find((user) => user.username === username);
+    const existingUser = users.find(user => user.username === username);
     if (existingUser) {
+        console.error("Username already exists:", username); // Log duplicate username
         return res.status(409).json({ message: "Username already exists." });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = { id: uuidv4(), username, password: hashedPassword };
     users.push(user);
+
+    console.log("Registered user:", user); // Log newly registered user
+    console.log("Users array:", users); // Log the updated users array
 
     res.status(201).json({ message: "User registered successfully!" });
 });
@@ -97,6 +255,7 @@ app.post("/login", loginLimiter, async (req, res) => {
     if (!validPassword) return res.status(401).json({ message: "Invalid username or password." });
 
     const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: "1h" });
+    console.log("Generated Token:", token); // Debugging log
     const refreshToken = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET);
     refreshTokens.push(refreshToken);
 
@@ -133,26 +292,6 @@ app.get("/user", authenticateToken, (req, res) => {
     res.status(200).json({ user: userWithoutPassword });
 });
 
-// Upload Content
-app.post("/upload", authenticateToken, upload.single("file"), (req, res) => {
-    if (!req.file) return res.status(400).json({ error: "No file uploaded." });
-
-    try {
-        const { caption, category } = req.body;
-        if (!caption || !category) {
-            return res.status(400).json({ message: "Caption and category are required." });
-        }
-
-        const filePath = `/uploads/${req.file.filename}`;
-        const newPost = { id: uuidv4(), url: filePath, caption, type: category };
-        contentData.push(newPost);
-
-        res.status(200).json({ message: "Content uploaded successfully!", url: filePath, id: newPost.id });
-    } catch (error) {
-        res.status(500).json({ message: "Error uploading content.", error });
-    }
-});
-
 // Delete Content by ID
 app.delete("/content/:id", authenticateToken, (req, res) => {
     const { id } = req.params;
@@ -164,25 +303,6 @@ app.delete("/content/:id", authenticateToken, (req, res) => {
     } else {
         res.status(404).json({ message: "Post not found." });
     }
-});
-
-// Get Content by Category with Pagination
-app.get("/content/:category", (req, res) => {
-    const { category } = req.params;
-    const { page = 1, limit = 10 } = req.query;
-
-    const content = contentData.filter(item => item.type.toLowerCase() === category.toLowerCase());
-    const startIndex = (page - 1) * limit;
-    const endIndex = startIndex + parseInt(limit);
-
-    const paginatedContent = content.slice(startIndex, endIndex);
-
-    res.json({
-        total: content.length,
-        page: parseInt(page),
-        limit: parseInt(limit),
-        data: paginatedContent,
-    });
 });
 
 // Handle Undefined Routes
@@ -198,19 +318,21 @@ app.use((err, req, res, next) => {
     res.status(500).json({ message: "An unexpected error occurred.", error: err.message });
 });
 
-// Start the Server
-app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+app.post('/content/:id/like', authenticateToken, (req, res) => {
+    const { id } = req.params;
+    console.log("Incoming like request for post ID:", id); // Debug log
+    const post = contentData.find(post => post.id === id);
+    if (!post) {
+        console.error("Post not found for ID:", id); // Debug log
+        return res.status(404).json({ message: "Post not found" });
+    }
+
+    post.likes = (post.likes || 0) + 1; // Increment the like count
+    console.log("Updated likes:", post.likes); // Debug log
+    res.status(200).json({ likes: post.likes });
+    
 });
 
-app.post("/content/:id/like", authenticateToken, (req, res) => {
-    const { id } = req.params;
-    const post = contentData.find(post => post.id === id);
-    if (!post) return res.status(404).json({ message: "Post not found" });
-    
-    post.likes = (post.likes || 0) + 1; // Increment the likes
-    res.status(200).json({ message: "Post liked successfully", likes: post.likes });
-});
 
 app.post("/content/:id/comment", authenticateToken, (req, res) => {
     const { id } = req.params;
@@ -244,49 +366,37 @@ app.get("/content/:id/share", (req, res) => {
     res.status(200).json({ message: "Shareable link generated", link: shareableLink });
 });
 
-const express = require("express");
-const { Configuration, OpenAIApi } = require("openai");
+console.log("Loaded OpenAI API Key:", process.env.OPENAI_API_KEY);
 
-const configuration = new Configuration({
-    apiKey: process.env.OPENAI_API_KEY,
-});
-const openai = new OpenAIApi(configuration);
-
-app.post("/recommendations", async (req, res) => {
-    const { userPreferences, availablePosts } = req.body;
-
+// Test the OpenAI setup
+(async () => {
     try {
-        const prompt = `
-        Based on the user's preferences and interaction history, recommend 5 posts.
-        User Preferences:
-        ${JSON.stringify(userPreferences)}
-
-        Available Posts:
-        ${JSON.stringify(availablePosts)}
-
-        Return only the recommended post IDs.
-        `;
-
-        const response = await openai.createCompletion({
-            model: "text-davinci-003",
-            prompt,
-            max_tokens: 200,
-            temperature: 0.7,
-        });
-
-        const recommendations = JSON.parse(response.data.choices[0].text.trim());
-        res.status(200).json({ recommendations });
+        const response = await openai.listModels();
+        console.log("Available models:", response.data);
     } catch (error) {
-        console.error("Error generating recommendations:", error);
-        res.status(500).json({ message: "Error generating recommendations" });
+        console.error("OpenAI API Error:", error.message);
     }
-});
+})();
 
-// Error Handling and Server Start
-app.use((req, res) => {
-    res.status(404).json({ error: "Not Found" });
-});
+async function fetchAIResponse() {
+    try {
+        const response = await openai.createChatCompletion({
+            model: "gpt-3.5-turbo",
+            prompt: "Your prompt here",
+            max_tokens: 100,
+        });
+        console.log(response.data);
+    } catch (error) {
+        console.error("Error fetching AI response:", error.message);
+    }
+}
 
+// Call fetchAIResponse at the top level using an IIFE (Immediately Invoked Function Expression)
+(async () => {
+    await fetchAIResponse();
+})();
+
+// Error Handling
 app.use((err, req, res, next) => {
     if (err instanceof multer.MulterError) {
         return res.status(400).json({ message: "File upload error", error: err.message });
@@ -294,6 +404,69 @@ app.use((err, req, res, next) => {
     res.status(500).json({ message: "An unexpected error occurred.", error: err.message });
 });
 
+app.get("/user/:username", authenticateToken, (req, res) => {
+    const { username } = req.params;
+
+    console.log("Requested username:", username); // Log the incoming username
+    console.log("Available users:", users);       // Log the users array for debugging
+
+    const user = users.find(u => u.username === username);
+    if (!user) {
+        console.error("User not found:", username); // Log the missing username
+        return res.status(404).json({ message: "User not found." });
+    }
+
+    const userPosts = contentData.filter(post => post.userId === user.id);
+    res.status(200).json({ user: { id: user.id, username: user.username }, posts: userPosts });
+});
+
+app.get("/content/:category", (req, res) => {
+    const { category } = req.params;
+    const { page = 1, limit = 10 } = req.query;
+
+    const content = contentData
+        .filter(item => item.type.toLowerCase() === category.toLowerCase())
+        .map(item => ({
+            ...item,
+            username: users.find(user => user.id === item.userId)?.username || "Unknown User",
+        }));
+
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + parseInt(limit);
+
+    const paginatedContent = content.slice(startIndex, endIndex);
+
+    res.json({
+        total: content.length,
+        page: parseInt(page),
+        limit: parseInt(limit),
+        data: paginatedContent,
+    });
+});
+
+app.post("/recommendations", authenticateToken, async (req, res) => {
+    const { userPreferences } = req.body;
+    console.log("Recommendations endpoint hit");
+    console.log("Request body:", req.body); // Debug the incoming request
+
+    if (!userPreferences) {
+        return res.status(400).json({ message: "User preferences are required." });
+    }
+
+    // Recommendation logic here
+    const recommendations = contentData.slice(0, 5); // Example: default to first 5 posts
+    res.status(200).json({ recommendations });
+});
+
+app.use((req, res, next) => {
+    console.log(`Incoming request: ${req.method} ${req.url}`);
+    console.log("Headers:", req.headers);
+    console.log("Body:", req.body);
+    next();
+});
+
+
+// Start the Server
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
