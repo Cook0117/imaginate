@@ -153,6 +153,29 @@ app.get("/content/videos", (req, res) => {
     res.status(200).json({ data: videos });
 });
 
+app.get("/content/animations", (req, res) => {
+    console.log("GET /content/animations called");
+    console.log("Content Data:", contentData);
+
+    const animations = contentData.filter(item => item.type === "Animations");
+    if (animations.length === 0) {
+        console.log("No animations found.");
+        return res.status(200).json({ data: [] });
+    }
+
+    console.log("Animations found:", animations);
+    res.status(200).json({ data: animations });
+});
+
+app.get("/content/vr", (req, res) => {
+    console.log("GET /content/vr called"); // Debug log
+    const vrContent = contentData.filter(item => item.type === "VR");
+    if (vrContent.length === 0) {
+        return res.status(200).json({ data: [] });
+    }
+    res.status(200).json({ data: vrContent });
+});
+
 // Middleware for token validation
 function authenticateToken(req, res, next) {
     const authHeader = req.headers.authorization;
