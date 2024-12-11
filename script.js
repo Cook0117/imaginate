@@ -5,20 +5,22 @@ document.addEventListener("DOMContentLoaded", function () {
     const sendButton = document.getElementById("send-button");
     const chatInput = document.getElementById("chat-input");
     const chatResponse = document.getElementById("chat-response");
+    const chatbotContainer = document.getElementById("chatbot-container");
 
-    if (!sendButton || !chatInput || !chatResponse) {
+    
+    if (!sendButton || !chatInput || !chatResponse || !chatbotContainer) {
         console.error("Required elements are missing in the DOM.");
         return;
     }
-
-    // Add click event listener to the send button
-    sendButton.addEventListener("click", async () => {
+    
+    // Function to handle chat submission
+    async function handleChatSubmission() {
         const userMessage = chatInput.value.trim();
         if (!userMessage) {
             chatResponse.innerText = "Please enter a question.";
             return;
         }
-
+    
         // Make the POST request to /chat
         try {
             chatResponse.innerText = "Preparing AI response...";
@@ -29,7 +31,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 },
                 body: JSON.stringify({ question: userMessage }),
             });
-
+    
             if (response.ok) {
                 const data = await response.json();
                 chatResponse.innerText = data.reply || "No response received.";
@@ -41,13 +43,52 @@ document.addEventListener("DOMContentLoaded", function () {
             console.error("Error:", error.message);
             chatResponse.innerText = "An error occurred while connecting to the server.";
         }
+    
+        // Clear the chat input field after submission
+        chatInput.value = "";
+    }
+    
+    // Add click event listener to the send button
+    sendButton.addEventListener("click", handleChatSubmission);
+    
+    // Add event listener for Enter key
+    chatInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+            event.preventDefault(); // Prevent default form submission
+            handleChatSubmission();
+        }
     });
-
+    
+    // Chatbot toggle functionality (open/close)
     document.getElementById("toggle-chatbot").addEventListener("click", function () {
-    const chatbot = document.getElementById("chatbot-container");
-    chatbot.style.display = chatbot.style.display === "none" ? "block" : "none";
-});
-
+        const chatbot = document.getElementById("chatbot-container");
+        chatbot.style.display = chatbot.style.display === "none" ? "block" : "none";
+    });
+    
+    // Add keyboard shortcut for closing chatbot (Escape key)
+    document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+            chatbotContainer.style.display = "none"; // Hide the chatbot
+        }
+    });
+    
+    // Add keyboard shortcut for opening the chatbot (Ctrl + C)
+    document.addEventListener("keydown", (event) => {
+        if (event.ctrlKey && event.key === "c") {
+            chatbotContainer.style.display = "block"; // Show the chatbot
+            chatInput.focus(); // Focus on the input field immediately
+        }
+    });
+    
+    // Automatically focus on the chat input when the chatbot is opened
+    document.getElementById("toggle-chatbot").addEventListener("click", function () {
+        const chatbot = document.getElementById("chatbot-container");
+        if (chatbot.style.display === "block") {
+            chatInput.focus(); // Focus on the input field when opened
+        }
+    });
+    
+    // Section toggle functionality
     function showSection(sectionId, loadFunction) {
         // Hide all sections
         document.querySelectorAll(".content-section").forEach((section) => {
@@ -64,6 +105,38 @@ document.addEventListener("DOMContentLoaded", function () {
         } else {
             console.error(`Section with ID '${sectionId}' not found.`);
         }
+    }
+
+
+
+
+
+// Add click listener for the Settings button
+document.getElementById("settingsButton").addEventListener("click", () => {
+    showSection("settingsSection");
+});
+
+document.getElementById('toggle-bold').addEventListener('click', function () {
+    const body = document.body; // Target the body element
+    if (body.classList.contains('bold-text')) {
+        body.classList.remove('bold-text'); // Remove bold class
+    } else {
+        body.classList.add('bold-text'); // Add bold class
+    }
+});
+
+    function appendUploadedContent(post) {
+        const contentFeedImages = document.getElementById("contentFeedImages");
+        const postDiv = document.createElement("div");
+        postDiv.className = "post";
+        postDiv.dataset.id = post.id;
+        postDiv.innerHTML = `
+            <img src="http://localhost:3000${post.url}" alt="${post.caption}" style="width: 100%;">
+            <p>${post.caption}</p>
+            <button class="like-button">Like</button>
+            <span class="like-count">${post.likes}</span>
+        `;
+        contentFeedImages.appendChild(postDiv);
     }
 
     // Navigation event listeners for different content types
@@ -201,36 +274,83 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-async function loadImages() {
-    const contentFeedImages = document.getElementById("contentFeedImages");
-    contentFeedImages.innerHTML = ""; // Clear existing content
-
-    try {
-        const response = await fetch("http://localhost:3000/content/images");
-        if (!response.ok) throw new Error("Failed to fetch images");
-
-        const responseData = await response.json();
-        const images = responseData.data;
-
-        if (!Array.isArray(images)) {
-            throw new Error("Invalid data format: Expected an array");
+    async function loadImages() {
+        const contentFeedImages = document.getElementById("contentFeedImages");
+        contentFeedImages.innerHTML = ""; // Clear existing content
+    
+        try {
+            const response = await fetch("http://localhost:3000/content/images");
+            if (!response.ok) throw new Error("Failed to fetch images");
+    
+            const responseData = await response.json();
+            const images = responseData.data;
+    
+            if (!Array.isArray(images)) {
+                throw new Error("Invalid data format: Expected an array");
+            }
+    
+            images.forEach((image) => {
+                // Create the post container
+                const postDiv = document.createElement("div");
+                postDiv.className = "post";
+                postDiv.dataset.id = image.id; // Add unique ID to the dataset
+    
+                // Add image, caption, like button, and like count
+                postDiv.innerHTML = `
+                    <img src="http://localhost:3000${image.url}" alt="${image.caption}" style="width: 100%; cursor: pointer;" 
+                         onclick="openViewModal('<img src=\\'http://localhost:3000${image.url}\\' alt=\\'${image.caption}\\' style=\\'width: 100%;\\'>')">
+                    <p>${image.caption}</p>
+      
+                `;
+    
+                // Append the post to the feed
+                contentFeedImages.appendChild(postDiv);
+            });
+    
+            // Add event listener for likes after posts are rendered
+            addLikeListeners();
+        } catch (error) {
+            console.error("Error loading images:", error);
         }
-
-        images.forEach((image) => {
-            // Define postDiv here
-            const postDiv = document.createElement("div");
-            postDiv.className = "post";
-            postDiv.innerHTML = `
-                <img src="http://localhost:3000${image.url}" alt="${image.caption}" style="width: 100%; cursor: pointer;" 
-                     onclick="openViewModal('<img src=\\'http://localhost:3000${image.url}\\' alt=\\'${image.caption}\\' style=\\'width: 100%;\\'>')">
-                <p>${image.caption}</p>
-            `;
-            contentFeedImages.appendChild(postDiv); // Append the postDiv
-        });
-    } catch (error) {
-        console.error("Error loading images:", error);
     }
-}
+    function addLikeListeners() {
+        const likeButtons = document.querySelectorAll(".like-button");
+    
+        likeButtons.forEach((button) => {
+            button.addEventListener("click", async (event) => {
+                const postElement = event.target.closest(".post"); // Get the parent post element
+                const postId = postElement.dataset.id; // Extract post ID
+                const token = localStorage.getItem("token");
+    
+                if (!token) {
+                    alert("You must be logged in to like a post.");
+                    return;
+                }
+    
+                try {
+                    const response = await fetch(`http://localhost:3000/content/${postId}/like`, {
+                        method: "POST",
+                        headers: { Authorization: `Bearer ${token}` },
+                    });
+    
+                    if (response.ok) {
+                        const data = await response.json();
+                        console.log("Post liked successfully:", data);
+    
+                        // Update the like count in the UI
+                        const likeCountSpan = postElement.querySelector(".like-count");
+                        likeCountSpan.textContent = data.likes;
+                    } else {
+                        const error = await response.json();
+                        console.error("Failed to like post:", error);
+                        alert(`Error: ${error.message}`);
+                    }
+                } catch (error) {
+                    console.error("Error liking post:", error);
+                }
+            });
+        });
+    }
 
 async function loadVideos() {
     const contentFeedVideos = document.getElementById("contentFeedVideos");
@@ -271,6 +391,8 @@ async function loadAnimations() {
 
         const responseData = await response.json();
         const animations = responseData.data;
+
+        console.log("Animations loaded:", animations); // Debug log
 
         if (!Array.isArray(animations)) {
             throw new Error("Invalid data format: Expected an array");
@@ -468,31 +590,82 @@ if (!recommendationsContainer) {
     }
 }
 
-// Attach function globally
-window.viewUserProfile = viewUserProfile;
+function renderPosts(postsData) {
+    const postsContainer = document.getElementById("postsContainer");
+    if (!postsContainer) {
+        console.error("Posts container not found.");
+        return;
+    }
 
-function createPostHTML(post) {
-    return `
-        <div class="post">
-            <div class="post-header">
-                <a href="#" onclick="viewUserProfile('${post.username}')">${post.username}</a>
-            </div>
-            <div class="post-media">
-                ${
-                    post.type === "Images"
-                        ? `<img src="http://localhost:3000${post.url}" alt="${post.caption}" />`
-                        : `<video src="http://localhost:3000${post.url}" controls></video>`
-                }
-            </div>
-            <p>${post.caption}</p>
-            <div class="post-actions">
-                <!-- Like Button -->
-                <button class="like-button" onclick="likePost('${post.id}')">
-                    ❤️ <span id="like-count-${post.id}">${post.likes || 0}</span>
-                </button>
-            </div>
-        </div>
-    `;
+    // Clear previous posts
+    postsContainer.innerHTML = "";
+
+    // Dynamically add posts
+    postsData.forEach(post => {
+        const postDiv = document.createElement("div");
+        postDiv.classList.add("post");
+        postDiv.setAttribute("data-id", post.id);
+
+        postDiv.innerHTML = `
+            <h2>${post.title}</h2>
+            <p>Category: ${post.category}</p>
+            <img src="${post.imageUrl}" alt="${post.title}" style="width: 100px; height: auto;" />
+            <p>By: ${post.username}</p>
+            <p>Likes: <span class="like-count">${post.likes}</span></p>
+            <button class="like-button">❤️ Like</button>
+        `;
+
+        postsContainer.appendChild(postDiv);
+    });
+
+    // Add like button functionality after posts are rendered
+    addLikeListeners();
+}
+
+// Fetch posts data (you can replace this URL with your actual API endpoint)
+async function fetchPostsData() {
+    try {
+        const response = await fetch('http://localhost:3000/posts'); // Replace with your actual endpoint
+        if (!response.ok) {
+            throw new Error('Failed to fetch posts');
+        }
+        const postsData = await response.json(); // Assuming the response is an array of posts
+        renderPosts(postsData);
+    } catch (error) {
+        console.error('Error fetching posts:', error);
+    }
+}
+
+// Function to render posts
+function renderPosts(postsData) {
+    const section = document.getElementById('postsContainer'); // Assuming you have a postsContainer in your HTML
+    if (!section) {
+        console.error('Posts container not found');
+        return;
+    }
+
+    postsData.forEach(post => {
+        const postDiv = document.createElement('div');
+        postDiv.classList.add('post');
+        postDiv.setAttribute('data-content', post.content);
+
+        // For Image Posts
+        if (post.imageUrl) {
+            postDiv.innerHTML = `
+                <h2>${post.title}</h2>
+                <img src="${post.imageUrl}" alt="${post.title}" style="width: 100px; height: auto;">
+                <p>${post.content}</p>
+            `;
+        } else {
+            // Handle posts without an image
+            postDiv.innerHTML = `
+                <h2>${post.title}</h2>
+                <p>${post.content}</p>
+            `;
+        }
+
+        section.appendChild(postDiv);
+    });
 }
 
 async function likePost(postId) {
@@ -529,6 +702,43 @@ async function likePost(postId) {
         console.error("Error liking the post:", error);
     }
 }
+
+// Function to handle text submission
+function handleTextSubmit(event) {
+    // Prevent the default form submission behavior
+    event.preventDefault();
+
+    const textInput = document.getElementById("text-input");
+    const textValue = textInput.value.trim();
+
+    if (textValue) {
+        console.log("Text submitted:", textValue);
+        textInput.value = ""; // Clear the input field after submission
+    } else {
+        console.log("Input is empty!");
+    }
+}
+
+// Add event listener for the 'Enter' key in the text input field
+document.getElementById("text-input").addEventListener("keydown", function (event) {
+    if (event.key === "Enter") {
+        handleTextSubmit(event);
+    }
+});
+
+// Open the images section with Ctrl + I
+document.addEventListener("keydown", (event) => {
+    if (event.ctrlKey && event.key === "i") {
+        showSection("imagesSection"); // Open the images section
+    }
+});
+
+// Open the videos section with Ctrl + V
+document.addEventListener("keydown", (event) => {
+    if (event.ctrlKey && event.key === "v") {
+        showSection("videosSection"); // Open the videos section
+    }
+});
 
 // Attach to the global window object
 window.likePost = likePost;
@@ -602,4 +812,7 @@ async function getAIResponse(question) {
         }
     }
 }
+
+   
 });
+
