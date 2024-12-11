@@ -52,9 +52,9 @@ header h1 {
     background: #444;
     color: white;
     border: none;
-    padding: 20px 80px; /* Increased padding for larger buttons */
-    font-size: 22px; /* Larger font size for the text */
-    font-weight: bold; /* Bold text for better visibility */
+    padding: 20px 80px !important; /* Increased padding for larger buttons */
+    font-size: 22px !important; /* Larger font size for the text */
+    font-weight: bold !important; /* Bold text for better visibility */
     cursor: pointer;
     border-radius: 20px;
     transition: background 0.3s, transform 0.2s;
@@ -63,11 +63,6 @@ header h1 {
 .nav-tab:hover {
     background: #555;
     transform: scale(1.1); /* Slightly larger scale on hover for emphasis */
-}
-
-.bold-text .nav-tab {
-    font-size: 20px !important; /* Fixed font size */
-    padding: 10px 20px !important; /* Fixed padding */
 }
 
 /* Rounded search bar styling */
@@ -170,7 +165,7 @@ main {
 #settingsSection {
     position: absolute;
     left: 90;  /* Moves it to the far left */
-    top: 10px;  /* Adjust the top value to position it vertically */
+    top: 18px;  /* Adjust the top value to position it vertically */
 }
 
 /* Modal for viewing larger content */
