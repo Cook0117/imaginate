@@ -20,13 +20,12 @@ body {
 }
 
 /* Header styles */
-/* Header styles */
 header {
     position: fixed;
     top: 0;
     left: 150px;
     width: calc(100% - 150px);
-    padding: 20px 30px; /* Increased padding for a larger header */
+    padding: 40px 30px; /* Increased padding for a larger header */
     background-color: #333;
     color: #fff;
     display: flex;
@@ -36,24 +35,25 @@ header {
 }
 
 header h1 {
-    font-size: 36px; /* Larger font size for the logo/title */
+    font-size: 40px; /* Larger font size for the logo/title */
     cursor: pointer;
     color: lightsteelblue;
+    font-weight: bold !important;
 }
 
 /* Navigation bar styles */
 .top-nav {
     display: flex;
     align-items: center;
-    gap: 15px; /* Increased spacing between navigation tabs */
+    gap: 20px; /* Increased spacing between navigation tabs */
 }
 
 .nav-tab {
     background: #444;
     color: white;
     border: none;
-    padding: 10px 20px; /* Increased padding for larger buttons */
-    font-size: 20px; /* Larger font size for the text */
+    padding: 20px 80px; /* Increased padding for larger buttons */
+    font-size: 22px; /* Larger font size for the text */
     font-weight: bold; /* Bold text for better visibility */
     cursor: pointer;
     border-radius: 20px;
@@ -65,6 +65,10 @@ header h1 {
     transform: scale(1.1); /* Slightly larger scale on hover for emphasis */
 }
 
+.bold-text .nav-tab {
+    font-size: 20px !important; /* Fixed font size */
+    padding: 10px 20px !important; /* Fixed padding */
+}
 
 /* Rounded search bar styling */
 .search-bar {
@@ -100,17 +104,18 @@ header h1 {
     padding: 20px 0;
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 20px;
 }
 
 .sidebar-item {
     display: flex;
-    align-items: center;
-    font-size: 16px;
+    margin-left: .5px;
+    font-size: 20px;
     padding: 10px;
     cursor: pointer;
     transition: background 0.3s;
     margin-bottom: 30px;
+    font-family: 'Courier New', Courier, monospace;
 }
 
 .sidebar-item:hover {
@@ -160,6 +165,12 @@ main {
     font-weight: bold;
     color: #333;
     cursor: pointer;
+}
+
+#settingsSection {
+    position: absolute;
+    left: 90;  /* Moves it to the far left */
+    top: 10px;  /* Adjust the top value to position it vertically */
 }
 
 /* Modal for viewing larger content */
@@ -212,7 +223,7 @@ main {
     bottom: 20px;                /* 20px from the bottom of the screen */
     right: 20px;                 /* 20px from the right side of the screen */
     padding: 20px 45px;          /* Larger padding for a bigger button */
-    background-color: #007bff;   /* Light blue background color */
+    background-color: #007fb9;   /* Light blue background color */
     color: white;                /* White text color */
     border: none;                /* Remove default border */
     border-radius: 35px;         /* Rounded button shape */
@@ -229,15 +240,23 @@ main {
     transform: scale(1.05);      /* Slightly enlarges the button on hover */
 }
 
+.bold-text .open-upload-btn {
+    font-size: 23px !important;  /* Ensure font size stays fixed */
+    padding: 20px 45px !important;  /* Keep padding fixed */
+}
+
 /* Styling for the content feed container */
 #contentFeedImages, #contentFeedVideos, #contentFeedAnimation, #contentFeedVr {
-    display: flex;
+display: flex;
     flex-wrap: wrap;
-    gap: 20px;
-    justify-content: center;
-    padding: 20px;
-    margin: 0;
-    margin-left: 70px;
+    gap: 20px; /* Space between items */
+    justify-content: flex-start; /* Aligns items to the left */
+    padding-left: 20px; /* Adjust this value to move further left */
+    align-items: center; /* Centers child elements vertically if there's extra space */
+    padding: 20px; /* Adds padding around the container */
+    margin: 0 auto; /* Centers the container itself if needed */
+    width: 100%; /* Ensures the container spans full width */
+    margin-left: -200px; /* Moves the entire feed to the left */
 }
 
 /* Individual post styling within the content feed */
@@ -309,6 +328,16 @@ main {
     display: none !important;
 }
 
+.savedPost {
+    margin-bottom: 10px;
+}
+
+.savePostButton {
+    margin-top: 10px;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
 .comments-section {
     margin-top: 10px;
     display: none; /* Hidden by default */
@@ -328,9 +357,6 @@ main {
     margin-bottom: 5px;
 }
 
-.save-button.saved {
-    color: black;
-}
 
 .like-button {
     background-color: #ff4d4d;
@@ -351,6 +377,11 @@ main {
 .like-button span {
     margin-left: 5px;
     font-weight: bold;
+}
+
+
+#randomContentFeed {
+    border: 2px solid red; /* Debug: Make the content feed visible */
 }
 
 /* Chatbot container styles */
@@ -403,7 +434,7 @@ main {
     padding: 8px;
     border-radius: 5px;
     margin-bottom: 10px;
-    font-size: 14px;
+    font-size: 16px;
 }
 
 /* Toggle button styles */
@@ -426,4 +457,56 @@ main {
 
 #toggle-chatbot:hover {
     background-color: #4A8ACB;
+}
+
+.content-section {
+    margin-left: 220px; /* Leave space for the sidebar */
+    padding: 20px;
+    margin-top: 110px;
+}
+
+.content-feed {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+    padding: 20px;
+}
+
+/* Prevent the bold-text class from affecting the h1 */
+.bold-text h1 {
+    font-weight: bold !important; /* Ensure the h1 remains bold */
+    font-size: 40px !important; /* Keep the font size the same */
+}
+
+.bold-text {
+    font-weight: bold;
+    font-size: inherit; /* Keep the font size unaffected */
+    font-size: calc(1em + 0.2em);
+}
+
+.bold-text * {
+    font-size: inherit;  /* Ensure child elements inherit the original size */
+}
+
+
+#toggle-bold {
+    font-size: 1.5em;        /* Larger text size */
+    padding: 15px 30px;      /* Bigger padding for a larger button */
+    background-color: #007fb9; /* Button color */
+    color: white;            /* Text color */
+    border: none;            /* No border */
+    border-radius: 10px;     /* Rounded corners */
+    cursor: pointer;         /* Pointer cursor on hover */
+    position: fixed;          /* Fix position to center it on the screen */
+    top: 230px;                 /* Vertically center */
+    left: 50%;                /* Horizontally center */
+    transform: translate(-50%, -50%); /* Adjust for the button's size */
+    z-index: 1000;            /* Ensure it stays above other content */
+    transition: all 0.3s ease; /* Smooth hover effect */
+}
+
+#toggle-bold:hover {
+    background-color: #253f5b; /* Darker color on hover */
+    transform: translate(-50%, -50%) scale(1.1); /* Keep centered and enlarge */
 }
