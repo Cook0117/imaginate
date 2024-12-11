@@ -31,6 +31,7 @@ console.log("App Port:", PORT);
 let users = []; // Array to store user accounts
 let contentData = []; // Array to store uploaded content data
 let refreshTokens = []; // Array to store valid refresh tokens
+let savedPosts = [];
 
 // Middleware
 app.use(cors());
@@ -38,6 +39,26 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use("/uploads", express.static("uploads"));
 app.use(express.static(path.join(__dirname, "public")));
+
+console.log("Content data initialized:", contentData);
+
+// Endpoint to save a post
+app.post('/save-post', (req, res) => {
+    const { postId, caption, url } = req.body;
+    if (!postId || !caption || !url) {
+        return res.status(400).json({ error: 'Missing post data' });
+    }
+
+    // Save post in the "saved" section
+    savedPosts.push({ postId, caption, url });
+    res.status(200).json({ message: 'Post saved successfully' });
+});
+
+// Endpoint to get saved posts
+app.get('/saved-posts', (req, res) => {
+    res.status(200).json(savedPosts);
+});
+
 
 // Function to get AI response
 async function getAIResponse(question) {
@@ -90,6 +111,11 @@ app.post('/chat', async (req, res) => {
     }
 });
 
+// Endpoint to serve random content
+app.get("/content/random", (req, res) => {
+    const randomContent = content[Math.floor(Math.random() * content.length)];
+    res.json(randomContent);
+});
 
 (async () => {
     try {
@@ -106,23 +132,43 @@ app.get("/", (req, res) => {res.sendFile(path.join(__dirname, "public", "index.h
 
 // Multer configuration
 const storage = multer.diskStorage({
-    destination: "uploads/",
-    filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname)),
+    destination: (req, file, cb) => {
+        cb(null, 'uploads/'); // Directory to store files
+    },
+    filename: (req, file, cb) => {
+        const ext = path.extname(file.originalname); // Extract original file extension
+        const fileName = `${Date.now()}-${file.originalname.replace(/\s+/g, '')}`; // Remove spaces for clean filenames
+        cb(null, fileName);
+    }
 });
 
 const upload = multer({
     storage,
-    limits: { fileSize: 10 * 1024 * 1024 }, // Limit file size to 10MB
     fileFilter: (req, file, cb) => {
-        const fileTypes = /jpeg|jpg|png|gif|mp4|webm|mkv/;
-        const extname = fileTypes.test(path.extname(file.originalname).toLowerCase());
-        const mimetype = fileTypes.test(file.mimetype);
-        if (extname && mimetype) {
+        const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif'];
+        if (allowedMimeTypes.includes(file.mimetype)) {
             cb(null, true);
         } else {
-            cb(new Error("Only images and videos are allowed."));
+            cb(new Error('Invalid file type. Only JPEG, PNG, and GIF are allowed.'));
         }
-    },
+    }
+});
+
+app.get("/content/search", (req, res) => {
+    console.log("Search endpoint hit with query:", req.query.query); // Debug log
+    const { query } = req.query;
+
+    if (!query) {
+        return res.status(400).json({ message: "Search query is required." });
+    }
+
+    // Assuming `contentData` is populated with your JSON data
+    const results = contentData.filter(item =>
+        item.caption.toLowerCase().includes(query.toLowerCase())
+    );
+
+    console.log("Search results:", results); // Debug log
+    res.status(200).json({ data: results });
 });
 
 // Route to fetch images
@@ -153,6 +199,7 @@ app.get("/content/videos", (req, res) => {
     res.status(200).json({ data: videos });
 });
 
+
 app.get("/content/animations", (req, res) => {
     console.log("GET /content/animations called");
     console.log("Content Data:", contentData);
@@ -174,6 +221,21 @@ app.get("/content/vr", (req, res) => {
         return res.status(200).json({ data: [] });
     }
     res.status(200).json({ data: vrContent });
+});
+
+const fs = require('fs');
+const path = require('path');
+
+app.get('/api/images', (req, res) => {
+    const imagesDir = path.join(__dirname, 'uploads');
+    fs.readdir(imagesDir, (err, files) => {
+        if (err) {
+            return res.status(500).send('Error reading images directory');
+        }
+        // Filter out non-image files (if needed)
+        const imageFiles = files.filter(file => /\.(jpg|jpeg|png|gif)$/.test(file));
+        res.json(imageFiles.map(file => `/uploads/${file}`));
+    });
 });
 
 // Middleware for token validation
@@ -315,24 +377,6 @@ app.get("/user", authenticateToken, (req, res) => {
     res.status(200).json({ user: userWithoutPassword });
 });
 
-// Delete Content by ID
-app.delete("/content/:id", authenticateToken, (req, res) => {
-    const { id } = req.params;
-    const initialLength = contentData.length;
-    contentData = contentData.filter(item => item.id !== id);
-
-    if (contentData.length < initialLength) {
-        res.status(200).json({ message: "Post deleted successfully!" });
-    } else {
-        res.status(404).json({ message: "Post not found." });
-    }
-});
-
-// Handle Undefined Routes
-app.use((req, res) => {
-    res.status(404).json({ error: "Not Found" });
-});
-
 // Error Handling Middleware
 app.use((err, req, res, next) => {
     if (err instanceof multer.MulterError) {
@@ -342,6 +386,7 @@ app.use((err, req, res, next) => {
 });
 
 app.post('/content/:id/like', authenticateToken, (req, res) => {
+    console.log("Current contentData:", contentData); // Log the contentData array
     const { id } = req.params;
     console.log("Incoming like request for post ID:", id); // Debug log
     const post = contentData.find(post => post.id === id);
@@ -356,39 +401,6 @@ app.post('/content/:id/like', authenticateToken, (req, res) => {
     
 });
 
-
-app.post("/content/:id/comment", authenticateToken, (req, res) => {
-    const { id } = req.params;
-    const { comment } = req.body;
-    const post = contentData.find(post => post.id === id);
-    if (!post) return res.status(404).json({ message: "Post not found" });
-
-    post.comments = post.comments || [];
-    post.comments.push({ user: req.user.username, comment });
-    res.status(200).json({ message: "Comment added successfully", comments: post.comments });
-});
-
-app.post("/content/:id/save", authenticateToken, (req, res) => {
-    const { id } = req.params;
-    const user = users.find(u => u.id === req.user.id);
-    if (!user) return res.status(404).json({ message: "User not found" });
-
-    user.savedPosts = user.savedPosts || [];
-    if (!user.savedPosts.includes(id)) {
-        user.savedPosts.push(id);
-    }
-    res.status(200).json({ message: "Post saved successfully" });
-});
-
-app.get("/content/:id/share", (req, res) => {
-    const { id } = req.params;
-    const post = contentData.find(post => post.id === id);
-    if (!post) return res.status(404).json({ message: "Post not found" });
-
-    const shareableLink = `http://localhost:3000/content/${id}`;
-    res.status(200).json({ message: "Shareable link generated", link: shareableLink });
-});
-
 console.log("Loaded OpenAI API Key:", process.env.OPENAI_API_KEY);
 
 // Test the OpenAI setup
@@ -400,6 +412,11 @@ console.log("Loaded OpenAI API Key:", process.env.OPENAI_API_KEY);
         console.error("OpenAI API Error:", error.message);
     }
 })();
+
+// Handle Undefined Routes
+app.use((req, res) => {
+    res.status(404).json({ error: "Not Found" });
+});
 
 async function fetchAIResponse() {
     try {
@@ -487,7 +504,6 @@ app.use((req, res, next) => {
     console.log("Body:", req.body);
     next();
 });
-
 
 // Start the Server
 app.listen(PORT, () => {
