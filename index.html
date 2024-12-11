@@ -14,51 +14,49 @@
         <nav class="top-nav">
             <button id="showImagesButton" class="nav-tab">Images</button>
             <button id="showVideosButton" class="nav-tab">Videos</button>
-            <button id="showAnimationButton" class="nav-tab">Animation</button>
-            <button id="showVrButton" class="nav-tab">VR/AR</button>
-            <div class="search-bar">
-                <input type="text" placeholder="Search for specific art...">
-            </div>
+ 
         </nav>
+
     </header>
+
+<!-- Homepage Section for Random Content (Only on homepage) -->
+<div id="homepage">
+    <div id="randomContentFeed" class="content-feed">
+        <!-- Random content will be dynamically loaded here -->
+    </div>
+</div>
+
+<!-- Other sections for specific content types (for pages other than homepage) -->
+<main>
+    <div id="contentFeed" class="content-feed">
+        <!-- Content for other sections will appear here -->
+    </div>
+
+    <div id="imagesSection" class="content-section" style="display: none;">
+   
+        <div id="contentFeedImages" class="content-feed"></div>
+    </div>
+    <div id="videosSection" class="content-section" style="display: none;">
+
+        <div id="contentFeedVideos" class="content-feed"></div>
+    </div>
+
+      
+    <div id="postsContainer"></div>
 
     <!-- Sidebar with navigation options -->
     <aside class="sidebar">
-        <div class="sidebar-item" id="loginButton">🔐 Login</div>
-        <div class="sidebar-item" id="registerButton">👤 Register</div>
-        <div class="sidebar-item" id="logoutButton" style="display: none;">🔓 Logout</div>
-        <div class="sidebar-item"><span class="icon">🔍</span> Search</div>
-        <div class="sidebar-item"><span class="icon">🔔</span> Notifications</div>
-        <div class="sidebar-item"><span class="icon">💬</span> Messages</div>
-        <div class="sidebar-item"><span class="icon">🔖</span> Saved</div>
-        <div class="sidebar-item"><span class="icon">⚙️</span> Settings</div>
+        <div class="sidebar-item" id="loginButton"> Login</div>
+        <div class="sidebar-item" id="registerButton"> Register</div>
+        <div class="sidebar-item" id="logoutButton" style="display: none;"> Logout</div>
+        <div class="sidebar-item" id="settingsButton"><span class="icon"></span> Settings</div>
     </aside>
 
-    <main>
-        <div id="contentFeed" class="content-feed">
-            <!-- Dynamically generated posts will appear here -->
-        </div>
-        <!-- Existing sections for specific content types -->
-        <div id="imagesSection" class="content-section" style="display: none;">
-            <h2>Images</h2>
-            <div id="contentFeedImages" class="content-feed"></div>
-        </div>
-        <div id="videosSection" class="content-section" style="display: none;">
-            <h2>Videos</h2>
-            <div id="contentFeedVideos" class="content-feed"></div>
-        </div>
-        <div id="animationSection" class="content-section" style="display: none;">
-            <h2>Animation</h2>
-            <div id="contentFeedAnimation" class="content-feed"></div>
-        </div>
-        <div id="vrSection" class="content-section" style="display: none;">
-            <h2>VR/AR</h2>
-            <div id="contentFeedVr" class="content-feed"></div>
-        </div>
-    </main>
-
-    <div class="post-header">
-        <a href="#" onclick="viewUserProfile('${post.username}')">${post.username}</a>
+    <div id="settingsSection" class="content-section" style="display: none;">
+        <h2>Settings</h2>
+        <p>Here you can manage your account settings.</p>
+        <!-- Add your settings form or content here -->
+        <button id="toggle-bold">Toggle Bold Text</button>
     </div>
 
     <!-- Upload Modal -->
@@ -71,8 +69,6 @@
                 <select id="category" name="category" required>
                     <option value="Images">Images</option>
                     <option value="Videos">Videos</option>
-                    <option value="Animation">Animation</option>
-                    <option value="VR/AR">VR/AR</option>
                 </select>
                 <button type="submit" class="post-btn">Post</button>
             </form>
@@ -122,21 +118,6 @@
     <button id="openUploadButton" class="open-upload-btn">Upload</button>
 
 
-
-    <div class="post-actions">
-        <button class="like-button" onclick="likePost('POST_ID')">
-            ❤️ <span id="like-count-POST_ID">0</span>
-        </button>
-    </div>
-
-    
-    <div id="recommendationsSection">
-        <h2>Recommended for You</h2>
-        <div id="recommendationsContainer" class="content-grid">
-            <!-- Recommended posts will be dynamically added here -->
-        </div>
-    </div>
-
 <!-- Chatbot toggle button -->
 <button id="toggle-chatbot">💬 Chat</button>
 
@@ -148,6 +129,9 @@
     <textarea id="chat-input" placeholder="Type your message here..."></textarea>
     <button id="send-button">Send</button>
 </div>
+
+
+
 
     <script src="script.js"></script>
 </body>
