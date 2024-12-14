@@ -38,7 +38,12 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use("/uploads", express.static("uploads"));
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, 'dist')));
+
+// Redirect all other routes to index.html for SPA
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+});
 
 console.log("Content data initialized:", contentData);
 
@@ -224,7 +229,6 @@ app.get("/content/vr", (req, res) => {
 });
 
 const fs = require('fs');
-const path = require('path');
 
 app.get('/api/images', (req, res) => {
     const imagesDir = path.join(__dirname, 'uploads');
@@ -506,6 +510,4 @@ app.use((req, res, next) => {
 });
 
 // Start the Server
-app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-});
+module.exports = app;
