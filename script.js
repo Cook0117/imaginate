@@ -184,7 +184,7 @@ document.getElementById('toggle-bold').addEventListener('click', function () {
             const password = document.getElementById("registerPassword").value;
 
             try {
-                const response = await fetch("https://imaginateart.vercel.app/register", {
+                const response = await fetch("https://imaginateart.vercel.app/api/auth/register", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ username, password }),
@@ -211,7 +211,7 @@ document.getElementById('toggle-bold').addEventListener('click', function () {
             const password = document.getElementById("loginPassword").value;
 
             try {
-                const response = await fetch("https://imaginateart.vercel.app/login", {
+                const response = await fetch("https://imaginateart.vercel.app/api/auth/login", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ username, password }),
