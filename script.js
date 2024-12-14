@@ -761,7 +761,7 @@ async function loadPosts() {
 }
 
 async function askAI(message) {
-    const response = await fetch("https://imaginateart.vercel.app/chat", {
+    const response = await fetch("https://imaginateart.vercel.app/api/chat", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -815,4 +815,3 @@ async function getAIResponse(question) {
 
    
 });
-
