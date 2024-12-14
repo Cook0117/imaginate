@@ -24,7 +24,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // Make the POST request to /chat
         try {
             chatResponse.innerText = "Preparing AI response...";
-            const response = await fetch("http://localhost:3000/chat", {
+            const response = await fetch("https://imaginateart.vercel.app/api/chat", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -131,7 +131,7 @@ document.getElementById('toggle-bold').addEventListener('click', function () {
         postDiv.className = "post";
         postDiv.dataset.id = post.id;
         postDiv.innerHTML = `
-            <img src="http://localhost:3000${post.url}" alt="${post.caption}" style="width: 100%;">
+            <img src="https://imaginateart.vercel.app${post.url}" alt="${post.caption}" style="width: 100%;">
             <p>${post.caption}</p>
             <button class="like-button">Like</button>
             <span class="like-count">${post.likes}</span>
@@ -184,7 +184,7 @@ document.getElementById('toggle-bold').addEventListener('click', function () {
             const password = document.getElementById("registerPassword").value;
 
             try {
-                const response = await fetch("http://localhost:3000/register", {
+                const response = await fetch("https://imaginateart.vercel.app/register", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ username, password }),
@@ -211,7 +211,7 @@ document.getElementById('toggle-bold').addEventListener('click', function () {
             const password = document.getElementById("loginPassword").value;
 
             try {
-                const response = await fetch("http://localhost:3000/login", {
+                const response = await fetch("https://imaginateart.vercel.app/login", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ username, password }),
@@ -252,7 +252,7 @@ document.getElementById('toggle-bold').addEventListener('click', function () {
                     return;
                 }
     
-                const response = await fetch("http://localhost:3000/upload", {
+                const response = await fetch("https://imaginateart.vercel.app/upload", {
                     method: "POST",
                     headers: { Authorization: `Bearer ${token}` },
                     body: formData,
@@ -279,7 +279,7 @@ document.getElementById('toggle-bold').addEventListener('click', function () {
         contentFeedImages.innerHTML = ""; // Clear existing content
     
         try {
-            const response = await fetch("http://localhost:3000/content/images");
+            const response = await fetch("https://imaginateart.vercel.app/content/images");
             if (!response.ok) throw new Error("Failed to fetch images");
     
             const responseData = await response.json();
@@ -297,8 +297,8 @@ document.getElementById('toggle-bold').addEventListener('click', function () {
     
                 // Add image, caption, like button, and like count
                 postDiv.innerHTML = `
-                    <img src="http://localhost:3000${image.url}" alt="${image.caption}" style="width: 100%; cursor: pointer;" 
-                         onclick="openViewModal('<img src=\\'http://localhost:3000${image.url}\\' alt=\\'${image.caption}\\' style=\\'width: 100%;\\'>')">
+                    <img src="https://imaginateart.vercel.app${image.url}" alt="${image.caption}" style="width: 100%; cursor: pointer;" 
+                         onclick="openViewModal('<img src=\\'https://imaginateart.vercel.app${image.url}\\' alt=\\'${image.caption}\\' style=\\'width: 100%;\\'>')">
                     <p>${image.caption}</p>
       
                 `;
@@ -328,7 +328,7 @@ document.getElementById('toggle-bold').addEventListener('click', function () {
                 }
     
                 try {
-                    const response = await fetch(`http://localhost:3000/content/${postId}/like`, {
+                    const response = await fetch(`https://imaginateart.vercel.app/content/${postId}/like`, {
                         method: "POST",
                         headers: { Authorization: `Bearer ${token}` },
                     });
@@ -357,7 +357,7 @@ async function loadVideos() {
     contentFeedVideos.innerHTML = ""; // Clear existing videos
 
     try {
-        const response = await fetch("http://localhost:3000/content/videos");
+        const response = await fetch("https://imaginateart.vercel.app/content/videos");
         if (!response.ok) throw new Error("Failed to fetch videos");
 
         const responseData = await response.json();
@@ -371,7 +371,7 @@ async function loadVideos() {
             const videoDiv = document.createElement("div");
             videoDiv.className = "post";
             videoDiv.innerHTML = `
-                <video src="http://localhost:3000${video.url}" controls style="width: 100%;"></video>
+                <video src="https://imaginateart.vercel.app${video.url}" controls style="width: 100%;"></video>
                 <p>${video.caption}</p>
             `;
             contentFeedVideos.appendChild(videoDiv);
@@ -386,7 +386,7 @@ async function loadAnimations() {
     contentFeedAnimation.innerHTML = ""; // Clear existing animations
 
     try {
-        const response = await fetch("http://localhost:3000/content/animations");
+        const response = await fetch("https://imaginateart.vercel.app/content/animations");
         if (!response.ok) throw new Error("Failed to fetch animations");
 
         const responseData = await response.json();
@@ -402,7 +402,7 @@ async function loadAnimations() {
             const animationDiv = document.createElement("div");
             animationDiv.className = "post";
             animationDiv.innerHTML = `
-                <video src="http://localhost:3000${animation.url}" controls style="width: 100%;"></video>
+                <video src="https://imaginateart.vercel.app${animation.url}" controls style="width: 100%;"></video>
                 <p>${animation.caption}</p>
             `;
             contentFeedAnimation.appendChild(animationDiv);
@@ -417,7 +417,7 @@ async function loadVr() {
     contentFeedVr.innerHTML = ""; // Clear existing VR/AR content
 
     try {
-        const response = await fetch("http://localhost:3000/content/vr");
+        const response = await fetch("https://imaginateart.vercel.app/content/vr");
         if (!response.ok) throw new Error("Failed to fetch VR/AR content");
 
         const responseData = await response.json();
@@ -431,7 +431,7 @@ async function loadVr() {
             const vrDiv = document.createElement("div");
             vrDiv.className = "post";
             vrDiv.innerHTML = `
-                <video src="http://localhost:3000${vr.url}" controls style="width: 100%;"></video>
+                <video src="https://imaginateart.vercel.app${vr.url}" controls style="width: 100%;"></video>
                 <p>${vr.caption}</p>
             `;
             contentFeedVr.appendChild(vrDiv);
@@ -487,7 +487,7 @@ async function uploadContent() {
             return;
         }
 
-        const response = await fetch("http://localhost:3000/upload", {
+        const response = await fetch("https://imaginateart.vercel.app/upload", {
             method: "POST",
             headers: { Authorization: `Bearer ${token}` },
             body: formData,
@@ -510,7 +510,7 @@ async function uploadContent() {
 // Function to view a user's profile
 async function viewUserProfile(username) {
     try {
-        const response = await fetch(`http://localhost:3000/user/${username}`, {
+        const response = await fetch(`https://imaginateart.vercel.app/user/${username}`, {
             headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         });
 
@@ -528,7 +528,7 @@ async function viewUserProfile(username) {
 
 async function fetchContentData() {
     try {
-        const response = await fetch("http://localhost:3000/content");
+        const response = await fetch("https://imaginateart.vercel.app/content");
         if (response.ok) {
             const data = await response.json();
             return data; // Assuming the server sends an array of posts
@@ -561,7 +561,7 @@ if (!recommendationsContainer) {
             likedPosts: [], // Empty array if user hasn't liked anything yet
         };
 
-        const response = await fetch("http://localhost:3000/recommendations", {
+        const response = await fetch("https://imaginateart.vercel.app/recommendations", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -625,7 +625,7 @@ function renderPosts(postsData) {
 // Fetch posts data (you can replace this URL with your actual API endpoint)
 async function fetchPostsData() {
     try {
-        const response = await fetch('http://localhost:3000/posts'); // Replace with your actual endpoint
+        const response = await fetch('https://imaginateart.vercel.app/posts'); // Replace with your actual endpoint
         if (!response.ok) {
             throw new Error('Failed to fetch posts');
         }
@@ -670,7 +670,7 @@ function renderPosts(postsData) {
 
 async function likePost(postId) {
     console.log(`Liking post with ID: ${postId}`); // Debugging log
-    const url = `http://localhost:3000/content/${postId}/like`;
+    const url = `https://imaginateart.vercel.app/content/${postId}/like`;
     console.log("URL being called:", url);
 
     try {
@@ -748,7 +748,7 @@ async function loadPosts() {
     contentFeed.innerHTML = ""; // Clear existing posts
 
     try {
-        const response = await fetch("http://localhost:3000/content/images");
+        const response = await fetch("https://imaginateart.vercel.app/content/images");
         if (!response.ok) throw new Error("Failed to fetch posts");
 
         const responseData = await response.json();
@@ -761,7 +761,7 @@ async function loadPosts() {
 }
 
 async function askAI(message) {
-    const response = await fetch("http://localhost:3000/chat", {
+    const response = await fetch("https://imaginateart.vercel.app/chat", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
