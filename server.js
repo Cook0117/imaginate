@@ -20,6 +20,9 @@ const app = express();
 
 // Constants
 const PORT = process.env.PORT || 3000; // Default to 3000 if PORT is not set
+const API_URL = process.env.API_URL || `http://localhost:${PORT}`;
+
+console.log('API Base URL:', API_URL);
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -83,7 +86,7 @@ async function getAIResponse(question) {
     }
 }
 
-app.post('/chat', async (req, res) => {
+app.post('/api/chat', async (req, res) => {
     try {
         const { question } = req.body;
 
@@ -301,7 +304,7 @@ app.post("/upload", authenticateToken, upload.single("file"), (req, res) => {
 });
 
 // Register Endpoint
-app.post("/register", async (req, res) => {
+app.post("/api/auth/register", async (req, res) => {
     const { username, password } = req.body;
 
     if (!username || !password) {
